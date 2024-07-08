@@ -1,0 +1,144 @@
+<style>
+	html {
+		background: #111;
+		color: white;
+		background-image: radial-gradient(#333, #222);
+		min-height: 100vh;
+		font-size: medium;
+	}
+	input, button {
+		background: transparent;
+		border: 1px solid silver;
+		padding: 3px 6px;
+	}
+	input {
+		border-radius: 5px;
+		color: white;
+		font-size: medium;
+	}
+	button {
+		border-radius: 8px;
+		cursor: pointer;
+		color: white;
+		font-size: medium;
+	}
+	form {
+		background-color: #1116;
+	}
+	header {
+		display: flex;
+		gap: 5px;
+		padding: 2px 6px;
+		border-bottom: 1px solid silver;
+		flex-direction: row;
+		border-radius: 0 !important;
+	}
+	header > h1 {
+		flex-grow: 1;
+		margin: 0;
+	}
+	.container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 3px 7px;
+		padding: 6px;
+		border: 1px solid silver;
+		flex-direction: column;
+		border-radius: 0;
+		margin-bottom: 20px;
+		align-items: center;
+		justify-content: center;
+	}
+	div.container {
+		flex-direction: row;
+		border: 0;
+	}
+	.container > *:not(:first-child) {
+		border: 1px solid silver;
+		padding: 3px 8px;
+		border-radius: 8px;
+	}
+	.container > div:not(:first-child) {
+		border: 0;
+	}
+	.container > button:not(:first-child),
+	.container > a:not(:first-child) {
+		cursor: pointer;
+	}
+	.container > p:first-child {
+		margin: 0;
+		font-size: x-large;
+	}
+</style>
+
+<script>
+	var srv = "http://localhost:8009"
+	var site = "piratebay"
+
+	function setsrv() {
+		srv = document.getElementById("srv").value
+	}
+
+	fetch(srv + "/api/v1/sites")
+	.then(response => response.json())
+	.then(data => {
+		data["supported_sites"].forEach(i => {
+			e = document.createElement("span")
+			e.textContent = i
+			e.id = i
+			e.onclick = function() {site = i}
+			document.getElementById("sites_container").appendChild(e)
+		}); 
+		
+	})
+	window.onload = function() {
+		const urlParams = new URLSearchParams(window.location.search);
+		if (urlParams.has('trending')) {
+			document.getElementById("title").textContent = "Trending"
+			urlParams.get('category')
+			urlParams.get('limit')
+			urlParams.get('page')
+
+		} else if (urlParams.has('recent')) {
+			document.getElementById("title").textContent = "Recent Torrents"
+			urlParams.get('limit')
+		}
+	}
+</script>
+
+
+<header>
+	<h1>CorsairCove</h1>
+	<input id="srv" placeholder="Server Address...">
+	<button onclick="setsrv()">Set Server</button>
+</header>
+<div id="sites_container" class="container">
+	<p>Sites: </p>
+</div>
+<form action="" method="get" id="search_container" class="container">
+	<input name="search" type="hidden">
+	<input name="q" id="query" placeholder="Search Query...">
+	<button type="submit">Search</button>
+</form>
+<form action="" method="get" id="trending_container" class="container">
+	<p>Trending:</p>
+	<input name="trending" type="hidden">
+	<div class="container">
+		<input name="cat" id="category" placeholder="Category">
+		<input name="page" id="page" type="number" placeholder="Page No.">
+		<input name="limit" id="limit" type="number" placeholder="Limit">
+	</div>
+	<label>
+		<input name="all" id="all_trending" type="checkbox">
+		get all trending
+	</label>
+	<button type="submit" href="?trending">get trending</button>
+</form>
+
+<form action="" method="get" id="recent_container" class="container">
+	<input name="recent" type="hidden">
+	<input name="limit" id="limit" type="number" placeholder="Limit">
+	<button type="submit">get recent</button>
+</form>
+
+<h1 id="title"></h1><div id="list"></div>
