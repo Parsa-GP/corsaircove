@@ -1,144 +1,530 @@
-<style>
-	html {
-		background: #111;
-		color: white;
-		background-image: radial-gradient(#333, #222);
-		min-height: 100vh;
-		font-size: medium;
-	}
-	input, button {
-		background: transparent;
-		border: 1px solid silver;
-		padding: 3px 6px;
-	}
-	input {
-		border-radius: 5px;
-		color: white;
-		font-size: medium;
-	}
-	button {
-		border-radius: 8px;
-		cursor: pointer;
-		color: white;
-		font-size: medium;
-	}
-	form {
-		background-color: #1116;
-	}
-	header {
-		display: flex;
-		gap: 5px;
-		padding: 2px 6px;
-		border-bottom: 1px solid silver;
-		flex-direction: row;
-		border-radius: 0 !important;
-	}
-	header > h1 {
-		flex-grow: 1;
-		margin: 0;
-	}
-	.container {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 3px 7px;
-		padding: 6px;
-		border: 1px solid silver;
-		flex-direction: column;
-		border-radius: 0;
-		margin-bottom: 20px;
-		align-items: center;
-		justify-content: center;
-	}
-	div.container {
-		flex-direction: row;
-		border: 0;
-	}
-	.container > *:not(:first-child) {
-		border: 1px solid silver;
-		padding: 3px 8px;
-		border-radius: 8px;
-	}
-	.container > div:not(:first-child) {
-		border: 0;
-	}
-	.container > button:not(:first-child),
-	.container > a:not(:first-child) {
-		cursor: pointer;
-	}
-	.container > p:first-child {
-		margin: 0;
-		font-size: x-large;
-	}
-</style>
-
-<script>
-	var srv = "http://localhost:8009"
-	var site = "piratebay"
-
-	function setsrv() {
-		srv = document.getElementById("srv").value
-	}
-
-	fetch(srv + "/api/v1/sites")
-	.then(response => response.json())
-	.then(data => {
-		data["supported_sites"].forEach(i => {
-			e = document.createElement("span")
-			e.textContent = i
-			e.id = i
-			e.onclick = function() {site = i}
-			document.getElementById("sites_container").appendChild(e)
-		}); 
-		
-	})
-	window.onload = function() {
-		const urlParams = new URLSearchParams(window.location.search);
-		if (urlParams.has('trending')) {
-			document.getElementById("title").textContent = "Trending"
-			urlParams.get('category')
-			urlParams.get('limit')
-			urlParams.get('page')
-
-		} else if (urlParams.has('recent')) {
-			document.getElementById("title").textContent = "Recent Torrents"
-			urlParams.get('limit')
+<!DOCTYPE html><html>
+<head>
+	<style> /* CSS */
+		html {
+			background: #111;
+			color: white;
+			background-image: radial-gradient(#333, #222);
+			min-height: 100vh;
+			font-size: medium;
 		}
-	}
-</script>
+		input, button {
+			background: transparent;
+			border: 1px solid silver;
+			padding: 3px 6px;
+		}
+		input, label {
+			border-radius: 3px !important;
+			color: white;
+			font-size: medium;
+		}
+		button {
+			border-radius: 8px;
+			cursor: pointer;
+			color: white;
+			font-size: medium;
+		}
+		form {
+			background-color: #1116;
+		}
+		header {
+			display: flex;
+			gap: 5px;
+			padding: 2px 6px;
+			border-bottom: 1px solid silver;
+			flex-direction: row;
+			border-radius: 0 !important;
+		}
+		header > h1 {
+			flex-grow: 1;
+			margin: 0;
+		}
+		.container {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 3px 7px;
+			padding: 6px;
+			border: 1px solid silver;
+			flex-direction: column;
+			border-radius: 0;
+			margin-bottom: 20px;
+			align-items: center;
+			justify-content: center;
+		}
+		div.container {
+			flex-direction: row;
+			border: 0;
+		}
+		.container > *:not(:first-child) {
+			border: 1px solid silver;
+			padding: 3px 8px;
+			border-radius: 8px;
+		}
+		.container > div:not(:first-child) {
+			border: 0;
+			margin: 0;
+			width: 100%;
+		}
+		.container > button:not(:first-child),
+		.container > a:not(:first-child) {
+			cursor: pointer;
+		}
+		.container > p:first-child {
+			margin: 0;
+			font-size: x-large;
+		}
+		.result_cont {
+			border: 1px solid silver;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			padding: 8px;
+			gap: 2px;
+		}
+		.result_cont > * {
+			width: fit-content;
+			line-break: anywhere;
+		}
+		.result_spacer {
+			width: 100%;
+		}
+		.magnet:hover .hash {
+			display: block;
+		}
+		
+		.hash {
+			display: none;
+		}
+		
+	</style>
+
+	<script> /* JS */
+		var srv = "http://localhost:8009"
+		var site = "piratebay"
+
+		function objectToQueryString(obj) {
+			let keyValuePairs = [];
+
+			for (let key in obj) {
+				if (obj[key] !== undefined && obj[key] !== "") {
+				keyValuePairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`);
+				}
+			}
+
+			return keyValuePairs.join('&');
+		}
 
 
-<header>
-	<h1>CorsairCove</h1>
-	<input id="srv" placeholder="Server Address...">
-	<button onclick="setsrv()">Set Server</button>
-</header>
-<div id="sites_container" class="container">
-	<p>Sites: </p>
-</div>
-<form action="" method="get" id="search_container" class="container">
-	<input name="search" type="hidden">
-	<input name="q" id="query" placeholder="Search Query...">
-	<button type="submit">Search</button>
-</form>
-<form action="" method="get" id="trending_container" class="container">
-	<p>Trending:</p>
-	<input name="trending" type="hidden">
-	<div class="container">
-		<input name="cat" id="category" placeholder="Category">
-		<input name="page" id="page" type="number" placeholder="Page No.">
-		<input name="limit" id="limit" type="number" placeholder="Limit">
+		function setCookie(name, value, daysToLive = null, path, domain) {
+			let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+
+			if (daysToLive !== null) {
+				let expirationDate = new Date();
+				expirationDate.setTime(expirationDate.getTime() + (daysToLive * 24 * 60 * 60 * 1000));
+				cookie += `; expires=${expirationDate.toUTCString()}`;
+			}
+
+			if (path) {
+				cookie += `; path=${path}`;
+			}
+
+			if (domain) {
+				cookie += `; domain=${domain}`;
+			}
+
+			document.cookie = cookie;
+		}
+
+		function getCookie(name) {
+			let cookies = document.cookie.split(';');
+
+			for (let cookie of cookies) {
+				let [cookieName, cookieValue] = cookie.split('=').map(c => c.trim());
+
+				if (cookieName === encodeURIComponent(name)) {
+				return decodeURIComponent(cookieValue);
+				}
+			}
+
+			return null;
+		}
+
+		function deleteAllCookies(path, domain) {
+			let cookies = document.cookie.split(';');
+
+			for (let cookie of cookies) {
+				let cookieName = cookie.split('=')[0].trim();
+				deleteCookie(cookieName, path, domain);
+			}
+		}
+
+
+		function setsrv() {
+			setCookie("srv", document.getElementById("srv").value)
+		}
+
+		ss_names = {
+			"1337x": "1337x",
+			"tgx": "Torrent Galaxy",
+			"torlock": "Torlock",
+			"piratebay": "PirateBay",
+			"nyaasi": "Nyaasi",
+			"zooqle": "Zooqle",
+			"kickass": "KickAss",
+			"bitsearch": "Bitsearch",
+			"magnetdl": "MagnetDL",
+			"libgen": "Libgen",
+			"yts": "YTS",
+			"limetorrent": "Limetorrent",
+			"torrentfunk": "TorrentFunk",
+			"glodls": "Glodls",
+			"torrentproject": "TorrentProject",
+			"ybt": "YourBittorrent",
+		}
+
+		ss = {
+			"1337x": {
+				"trending_available": true,
+				"trending_category": true,
+				"search_by_category": true,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv","apps","documentaries", "other", "xxx", "movies"],
+				"limit" : 100
+			},
+			"torlock": {
+				"trending_available": true,
+				"trending_category": true,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv","apps", "documentaries", "other", "xxx", "movies", "books", "images"],
+				"limit" : 50
+			},
+			"zooqle": {
+				"trending_available": false,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": false,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 30
+			},
+			"magnetdl": {
+				"trending_available": false,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["apps", "movies", "music", "games", "tv", "books"],
+				"limit": 40
+			},
+			"tgx": {
+				"trending_available": true,
+				"trending_category": true,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv",
+							"apps", "documentaries", "other", "xxx", "movies", "books"],
+				"limit": 50
+			},
+			"nyaasi": {
+				"trending_available": false,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 50
+
+			},
+			"piratebay": {
+				"trending_available": true,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["tv"],
+				"limit": 50
+			},
+			"bitsearch": {
+				"trending_available": true,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": false,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 50
+			},
+			"kickass": {
+				"trending_available": true,
+				"trending_category": true,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv","apps", "documentaries", "other", "xxx", "movies", "books"],
+				"limit": 50
+			},
+			"libgen'": {
+				"trending_available": false,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": false,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 25
+			},
+			"yts": {
+				"trending_available": true,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 20
+			},
+			"limetorrent": {
+				"trending_available": true,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv",
+							"apps", "other", "movies", "books"],
+				"limit": 50
+			},
+			"torrentfunk": {
+				"trending_available": true,
+				"trending_category": true,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv",
+							"apps", "xxx", "movies", "books"],
+				"limit": 50
+			},
+			"glodls": {
+				"trending_available": true,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 45
+			},
+			"torrentproject": {
+				"trending_available": false,
+				"trending_category": false,
+				"search_by_category": false,
+				"recent_available": false,
+				"recent_category_available": false,
+				"categories": [],
+				"limit": 20
+			},
+			"ybt": {
+				"trending_available": true,
+				"trending_category": true,
+				"search_by_category": false,
+				"recent_available": true,
+				"recent_category_available": true,
+				"categories": ["anime", "music", "games", "tv",
+							"apps", "xxx", "movies", "books", "pictures", "other"],
+				"limit": 20
+			}
+
+		}
+
+		let cats = [""]
+		for (key in ss) {
+			//if (ss[key].hasOwnProperty('categories') && Array.isArray(ss[key].categories)) {
+			cats = cats.concat(ss[key].categories)
+		}
+		cats = [...new Set(cats)]
+
+
+		fetch(srv + "/api/v1/sites")
+		.then(response => response.json())
+		.then(data => {
+			data["supported_sites"].forEach(i => {
+				e = document.createElement("span")
+				e.textContent = ss_names[i]
+				e.id = i
+				e.onclick = function() {setCookie("site", i)}
+				document.getElementById("sites_container").appendChild(e)
+			}); 
+		})
+
+		function filter(cat) {
+			let cats = []
+			 let sites_have_cat = []
+			for (site in ss) {
+				cats = ss[site].categories
+				if (cats.includes(cat)) {
+					sites_have_cat = sites_have_cat.concat(site)
+				}
+			}
+			return sites_have_cat
+		}
+
+		window.onload = function() {
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('search')) {
+				document.getElementById("title").textContent = "Search Result"
+				query = urlParams.get('q')
+				categ = urlParams.get('category')
+				limit = urlParams.get('limit')
+
+				arg = {"site":getCookie("site"), "query":query, "limit":limit}
+
+				fetch(srv + "/api/v1/search?"+objectToQueryString(arg))
+				.then(response => response.json())
+				.then(data => {
+					console.log(data)
+					if (data.hasOwnProperty('error')) {
+						error.textContent = i["error"]
+						error.classList = ["error"]
+						document.getElementById("list").appendChild(error)
+
+					}
+					data["time"]
+					data["total"]
+					data["data"].forEach(i => {
+						category = document.createElement("span")
+						category.textContent = i["category"]
+						category.classList = ["cat"]
+
+						date = document.createElement("span")
+						date.textContent = i["date"]
+						date.classList = ["date"]
+
+						sele = document.createElement("span")
+						sele.textContent = "SE:"+i["seeders"]+" LE:"+i["leechers"]
+						sele.classList = ["leechers"]
+
+						magnet = document.createElement("a")
+						magnet.innerHTML = "MAGNET <span class='hash'>Hash:" + i["hash"]+"</span>"
+						magnet.href = i["magnet"]
+						magnet.classList = ["magnet"]
+
+						tname = document.createElement("a")
+						tname.textContent = i["name"]
+						tname.classList = ["name"]
+						tname.href = i["url"]
+
+						size = document.createElement("span")
+						size.textContent = i["size"]
+						size.classList = ["size"]
+
+						uploader = document.createElement("span")
+						uploader.textContent = "by:  "+i["uploader"]
+						uploader.classList = ["uploader"]
+
+
+						spacer1 = document.createElement("span")
+						spacer1.classList = ["result_spacer"]
+						spacer2 = document.createElement("span")
+						spacer2.classList = ["result_spacer"]
+						spacer3 = document.createElement("span")
+						spacer3.classList = ["result_spacer"]
+
+						cont = document.createElement("div")
+						cont.classList = ["result_cont"]
+						cont.appendChild(tname)
+						cont.appendChild(spacer1)
+
+						cont.appendChild(category)
+						cont.appendChild(date)
+						cont.appendChild(size)
+						cont.appendChild(spacer2)
+
+						cont.appendChild(sele)
+						cont.appendChild(uploader)
+						cont.appendChild(spacer3)
+
+						cont.appendChild(magnet)
+						document.getElementById("list").appendChild(cont)
+
+					}); 
+					
+				})
+
+			} else if (urlParams.has('trending')) {
+				document.getElementById("title").textContent = "Trending"
+				urlParams.get('category')
+				urlParams.get('limit')
+				urlParams.get('page')
+
+			} else if (urlParams.has('recent')) {
+				document.getElementById("title").textContent = "Recent Torrents"
+				urlParams.get('limit')
+			}
+
+
+			let catElements = document.querySelectorAll('.cats');
+
+			catElements.forEach(catElement => {
+				let select = document.createElement('select');
+
+				cats.forEach(category => {
+					let optionElement = document.createElement('option');
+					optionElement.value = category;
+					optionElement.textContent = category;
+					catElement.appendChild(optionElement);
+				});
+			});
+
+		}
+
+	</script>
+</head>
+
+<body>
+	<header>
+		<h1>CorsairCove</h1>
+		<input id="srv" placeholder="Server Address...">
+		<button onclick="setsrv()">Set Destination Bay</button>
+	</header>
+
+	<div id="sites_container" class="container">
+		<p>Bays: </p>
 	</div>
-	<label>
-		<input name="all" id="all_trending" type="checkbox">
-		get all trending
-	</label>
-	<button type="submit" href="?trending">get trending</button>
-</form>
 
-<form action="" method="get" id="recent_container" class="container">
-	<input name="recent" type="hidden">
-	<input name="limit" id="limit" type="number" placeholder="Limit">
-	<button type="submit">get recent</button>
-</form>
+	<form action="" method="get" id="search_container" class="container">
+		<p>Search the Seven Seas:</p>
+		<input name="search" type="hidden">
+		<input name="q" id="query" placeholder="Search Query...">
+		<input name="limit" id="limit" type="number" placeholder="Limit">
+		<button type="submit">lookup</button>
+	</form>
 
-<h1 id="title"></h1><div id="list"></div>
+	<form action="" method="get" id="trending_container" class="container">
+		<p>Trending amongst other rippers:</p>
+		<input name="trending" type="hidden">
+		<div class="container">
+			<input name="cat" id="category" placeholder="Category">
+			<input name="page" id="page" type="number" placeholder="Page No.">
+			<input name="limit" id="limit" type="number" placeholder="Limit">
+		</div>
+		<select class="cats" name="category"></select>	  
+		<label>
+			<input name="all" id="all_trending" type="checkbox">
+			get all trending
+		</label>
+		<button type="submit" href="?trending">lookup</button>
+	</form>
+
+	<form action="" method="get" id="recent_container" class="container">
+		<p>Hot off the fire:</p>
+		<input name="recent" type="hidden">
+		<input name="limit" id="limit" type="number" placeholder="Limit">
+		<select class="cats" name="category"></select>	  
+		<button type="submit">lookup what's anew</button>
+	</form>
+
+	<main class="container main" id="result_container">
+		<h1 id="title"></h1><div id="list"></div>
+	</main>
+
+</body></html>
