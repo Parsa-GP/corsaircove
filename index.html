@@ -1,23 +1,35 @@
 <!DOCTYPE html><html>
 <head>
 	<style> /* CSS */
+		::-moz-selection { /* Code for Firefox */
+			color: white;
+			background: crimson;
+		}
+		::selection {
+			color: white;
+			background: crimson;
+		}
 		html {
 			background: #111;
 			color: white;
 			background-image: radial-gradient(#333, #222);
 			min-height: 100vh;
 			font-size: medium;
-			width: calc(100% - 8px);
+			width: calc(100% - 7px);
 		}
 		input, button {
 			background: transparent;
 			border: 1px solid silver;
+			outline: none;
 			padding: 3px 6px;
 		}
 		input, label {
 			border-radius: 3px !important;
 			color: white;
 			font-size: medium;
+		}
+		input[type="number"] {
+			width: 80px;
 		}
 		button {
 			border-radius: 8px;
@@ -40,42 +52,87 @@
 			flex-grow: 1;
 			margin: 0;
 			text-shadow: 0px 0px 10px crimson, 0px 0px 5px palevioletred, 0px 0px 15px crimson, 2px 2px darkred, -2px -2px crimson;
+			margin-right: 20px;
 		}
+		
+		select {
+			background-color: transparent;
+			color: white;
+			outline: none;
+		}
+
+		select > option {
+			color: black;
+		}
+
 		.container {
 			display: flex;
 			flex-wrap: wrap;
 			gap: 3px 7px;
-			padding: 6px 0;
+			padding: 6px 10px;
 			border: 1px solid silver;
-			flex-direction: column;
 			border-radius: 0;
-			margin-bottom: 20px;
-			align-items: center;
-			justify-content: center;
-			/*! background-color: #1116; */
+			cursor: default;
+			
 		}
 		div.container {
 			flex-direction: row;
 			border: 0;
 		}
-		.container > *:not(:first-child) {
+		.container > *:not(h1, h2) {
 			border: 1px solid silver;
 			padding: 3px 8px;
 			border-radius: 8px;
 		}
-		.container > div:not(:first-child) {
+		.container > h1,
+		.container > h2 {
+			margin: 3px 0;
+		}
+		.container > label {
+			border: none !important;
+		}
+		.container > div {
+			display: flex;
+			flex-direction: row;
 			border: 0;
 			margin: 0;
-			width: 100%;
+			padding: 0;
 		}
-		.container > button:not(:first-child),
-		.container > a:not(:first-child) {
+		.container > button,
+		.container > a {
 			cursor: pointer;
 		}
-		.container > p:first-child {
-			margin: 0;
-			font-size: x-large;
+
+		#containers {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: flex-start;
+			gap: 8px;
 		}
+
+		form.container {
+			width: 400px;
+			height: auto;
+			overflow: hidden;
+		}
+
+		form.container *:not(h2) {display: none;}
+
+		form.container:hover {
+			width: 400px;
+			height: auto;
+			overflow: hidden;
+		}
+		form.container:hover *:not(h2) {
+			display: unset;
+		}
+
+		.column {
+			flex-direction: column;
+			display: flex;
+		}
+
 		.result_cont {
 			border-top: 1px solid silver;
 			display: flex;
@@ -85,8 +142,8 @@
 			padding: 12px 5px;
 			gap: 1px;
 			width: calc(100% - 26px);
-			/*! background-color: #1116; */
 			text-decoration: none;
+			margin-top: 25px;
 		}
 		.result_cont > * {
 			width: fit-content;
@@ -112,11 +169,26 @@
 			color: palevioletred;
 		}
 		
-	
+		#setdest, #srv {
+			min-width: 10px;
+			overflow: hidden;
+			max-height: 50px;
+		}
+		#query {
+			width: calc(100% - 126px);
+		}
+		#result_container {
+			margin-top: 25px;
+		}
 	</style>
 
 	<script> /* JS */
-		var srv = "http://localhost:8009"
+		if (getCookie("srv")) {
+			var srv = getCookie("srv")
+		} else {
+			setCookie("srv", "http://localhost:8009") // https://torrent-api-py-nx0x.onrender.com
+		}
+		
 		var site = "piratebay"
 
 		function objectToQueryString(obj) {
@@ -178,6 +250,7 @@
 
 		function setsrv() {
 			setCookie("srv", document.getElementById("srv").value)
+			refresh_sites()
 		}
 
 		ss_names = {
@@ -360,17 +433,20 @@
 		cats = [...new Set(cats)]
 
 
-		fetch(srv + "/api/v1/sites")
-		.then(response => response.json())
-		.then(data => {
-			data["supported_sites"].forEach(i => {
-				e = document.createElement("span")
-				e.textContent = ss_names[i]
-				e.id = i
-				e.onclick = function() {setCookie("site", i)}
-				document.getElementById("sites_container").appendChild(e)
-			}); 
-		})
+		function refresh_sites() {
+			fetch(getCookie("srv") + "/api/v1/sites")
+			.then(response => response.json())
+			.then(data => {
+				data["supported_sites"].forEach(i => {
+					e = document.createElement("span")
+					e.textContent = ss_names[i]
+					e.id = i
+					e.onclick = function() {setCookie("site", i)}
+					document.getElementById("sites_container").appendChild(e)
+				}); 
+			})
+		}
+		refresh_sites()
 
 		function filter(cat) {
 			let cats = []
@@ -386,6 +462,7 @@
 
 		window.onload = function() {
 			const urlParams = new URLSearchParams(window.location.search);
+			document.getElementById("srv").value = getCookie("srv")
 			if (urlParams.has('search')) {
 				document.getElementById("title").textContent = "Search Result"
 				query = urlParams.get('q')
@@ -394,7 +471,8 @@
 
 				arg = {"site":getCookie("site"), "query":query, "limit":limit}
 
-				fetch(srv + "/api/v1/search?"+objectToQueryString(arg))
+
+				fetch(getCookie("srv") + "/api/v1/search?"+objectToQueryString(arg))
 				.then(response => response.json())
 				.then(data => {
 					console.log(data)
@@ -498,44 +576,48 @@
 	<header>
 		<h1>CorsairCove</h1>
 		<input id="srv" placeholder="Server Address...">
-		<button onclick="setsrv()">Set Destination Bay</button>
+		<button id="setdest" onclick="setsrv()">Set Destination Bay</button>
 	</header>
 
 	<div id="sites_container" class="container">
-		<p>Bays: </p>
+		<h1>Bays: </h1>
 	</div>
+	<div id="containers">
+		<form action="" method="get" id="search_container" class="container">
+			<h2>Search the Seven Seas:</h2>
+			<input name="search" type="hidden">
+			<div class="container">
+				<input name="q" id="query" placeholder="Search Query...">
+				<input name="limit" id="limit" type="number" placeholder="Limit">
+			</div>
+			<button type="submit">lookup</button>
+		</form>
 
-	<form action="" method="get" id="search_container" class="container">
-		<p>Search the Seven Seas:</p>
-		<input name="search" type="hidden">
-		<input name="q" id="query" placeholder="Search Query...">
-		<input name="limit" id="limit" type="number" placeholder="Limit">
-		<button type="submit">lookup</button>
-	</form>
+		<form action="" method="get" id="trending_container" class="container">
+			<h2>Trending amongst other rippers:</h2>
+			<input name="trending" type="hidden">
+			<div class="container">
+				<input name="page" id="page" type="number" placeholder="Page No.">
+				<input name="limit" id="limit" type="number" placeholder="Limit">
+				<label>
+					<input name="all" id="all_trending" type="checkbox">
+					get all trending
+				</label>
+			</div>
+			<select class="cats" name="category"></select>	  
+			<button type="submit" href="?trending">lookup</button>
+		</form>
 
-	<form action="" method="get" id="trending_container" class="container">
-		<p>Trending amongst other rippers:</p>
-		<input name="trending" type="hidden">
-		<div class="container">
-			<input name="page" id="page" type="number" placeholder="Page No.">
-			<input name="limit" id="limit" type="number" placeholder="Limit">
-		</div>
-		<select class="cats" name="category"></select>	  
-		<label>
-			<input name="all" id="all_trending" type="checkbox">
-			get all trending
-		</label>
-		<button type="submit" href="?trending">lookup</button>
-	</form>
-
-	<form action="" method="get" id="recent_container" class="container">
-		<p>Hot off the fire:</p>
-		<input name="recent" type="hidden">
-		<input name="limit" id="limit" type="number" placeholder="Limit">
-		<select class="cats" name="category"></select>	  
-		<button type="submit">lookup what's anew</button>
-	</form>
-
+		<form action="" method="get" id="recent_container" class="container">
+			<h2>Hot off the fire:</h2>
+			<input name="recent" type="hidden">
+			<div class="container">
+				<input name="limit" id="limit" type="number" placeholder="Limit">
+				<select class="cats" name="category"></select>	  
+			</div>
+			<button type="submit">lookup what's anew</button>
+		</form>
+	</div>
 	<main class="container main" id="result_container">
 		<h1 id="title"></h1><div id="list"></div>
 	</main>
