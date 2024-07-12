@@ -7,6 +7,7 @@
 			background-image: radial-gradient(#333, #222);
 			min-height: 100vh;
 			font-size: medium;
+			width: calc(100% - 8px);
 		}
 		input, button {
 			background: transparent;
@@ -38,18 +39,20 @@
 		header > h1 {
 			flex-grow: 1;
 			margin: 0;
+			text-shadow: 0px 0px 10px crimson, 0px 0px 5px palevioletred, 0px 0px 15px crimson, 2px 2px darkred, -2px -2px crimson;
 		}
 		.container {
 			display: flex;
 			flex-wrap: wrap;
 			gap: 3px 7px;
-			padding: 6px;
+			padding: 6px 0;
 			border: 1px solid silver;
 			flex-direction: column;
 			border-radius: 0;
 			margin-bottom: 20px;
 			align-items: center;
 			justify-content: center;
+			/*! background-color: #1116; */
 		}
 		div.container {
 			flex-direction: row;
@@ -74,13 +77,16 @@
 			font-size: x-large;
 		}
 		.result_cont {
-			border: 1px solid silver;
+			border-top: 1px solid silver;
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
 			justify-content: space-between;
-			padding: 8px;
-			gap: 2px;
+			padding: 12px 5px;
+			gap: 1px;
+			width: calc(100% - 26px);
+			/*! background-color: #1116; */
+			text-decoration: none;
 		}
 		.result_cont > * {
 			width: fit-content;
@@ -96,7 +102,17 @@
 		.hash {
 			display: none;
 		}
+		.error {
+			border: none !important;
+			padding: 0 !important;
+			color: palevioletred;
+		}
+			
+		.result_cont *:link {
+			color: palevioletred;
+		}
 		
+	
 	</style>
 
 	<script> /* JS */
@@ -358,7 +374,7 @@
 
 		function filter(cat) {
 			let cats = []
-			 let sites_have_cat = []
+			let sites_have_cat = []
 			for (site in ss) {
 				cats = ss[site].categories
 				if (cats.includes(cat)) {
@@ -383,9 +399,10 @@
 				.then(data => {
 					console.log(data)
 					if (data.hasOwnProperty('error')) {
-						error.textContent = i["error"]
+						error = document.createElement("span")
+						error.textContent = data["error"]
 						error.classList = ["error"]
-						document.getElementById("list").appendChild(error)
+						document.getElementById("result_container").appendChild(error)
 
 					}
 					data["time"]
@@ -426,24 +443,21 @@
 						spacer1.classList = ["result_spacer"]
 						spacer2 = document.createElement("span")
 						spacer2.classList = ["result_spacer"]
-						spacer3 = document.createElement("span")
-						spacer3.classList = ["result_spacer"]
 
 						cont = document.createElement("div")
 						cont.classList = ["result_cont"]
+
 						cont.appendChild(tname)
 						cont.appendChild(spacer1)
 
 						cont.appendChild(category)
 						cont.appendChild(date)
 						cont.appendChild(size)
+						cont.appendChild(uploader)
 						cont.appendChild(spacer2)
 
-						cont.appendChild(sele)
-						cont.appendChild(uploader)
-						cont.appendChild(spacer3)
-
 						cont.appendChild(magnet)
+						cont.appendChild(sele)
 						document.getElementById("list").appendChild(cont)
 
 					}); 
@@ -503,7 +517,6 @@
 		<p>Trending amongst other rippers:</p>
 		<input name="trending" type="hidden">
 		<div class="container">
-			<input name="cat" id="category" placeholder="Category">
 			<input name="page" id="page" type="number" placeholder="Page No.">
 			<input name="limit" id="limit" type="number" placeholder="Limit">
 		</div>
