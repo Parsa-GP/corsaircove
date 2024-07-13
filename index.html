@@ -1,10 +1,16 @@
 <!DOCTYPE html><html>
 <head>
-	<style> /* CSS */
-		::-moz-selection { /* Code for Firefox */
+	<title>CorsairCove</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Tektur:wdth,wght@87.5,400..900&family=Workbench:SCAN@-20&display=swap" rel="stylesheet">
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Tektur:wdth,wght@87.5,400..900&family=Workbench:SCAN@-20&display=swap');
+
+		::-moz-selection {
 			color: white;
 			background: crimson;
-		}
+		} 
 		::selection {
 			color: white;
 			background: crimson;
@@ -16,6 +22,12 @@
 			min-height: 100vh;
 			font-size: medium;
 			width: calc(100% - 7px);
+
+			font-family: "Tektur", sans-serif !important;
+			font-optical-sizing: auto;
+			font-style: normal;
+			font-variation-settings:
+				"wdth" 87.5;
 		}
 		input, button {
 			background: transparent;
@@ -53,8 +65,16 @@
 			margin: 0;
 			text-shadow: 0px 0px 10px crimson, 0px 0px 5px palevioletred, 0px 0px 15px crimson, 2px 2px darkred, -2px -2px crimson;
 			margin-right: 20px;
+
+			font-family: "Workbench", sans-serif;
+			font-optical-sizing: auto;
+			font-style: normal;
+			font-variation-settings:
+				"BLED" 0,
+				"SCAN" -20;
+			font-size: 40px;
 		}
-		
+
 		select {
 			background-color: transparent;
 			color: white;
@@ -74,6 +94,10 @@
 			border-radius: 0;
 			cursor: default;
 			
+			align-items: center;
+			justify-content: space-between;
+			/*! gap: 3px; */
+			/*! justify-content: center; */
 		}
 		div.container {
 			flex-direction: row;
@@ -112,22 +136,25 @@
 		}
 
 		form.container {
-			width: 400px;
+			width: 350px;
 			height: auto;
 			overflow: hidden;
 		}
 
 		form.container *:not(h2) {display: none;}
 
-		form.container:hover {
-			width: 400px;
+		form.container.clicked {
 			height: auto;
 			overflow: hidden;
 		}
-		form.container:hover *:not(h2) {
+		form.container.clicked *:not(h2) {
 			display: unset;
 		}
 
+		form > h2 {
+			pointer-events: none
+		}
+		
 		.column {
 			flex-direction: column;
 			display: flex;
@@ -155,7 +182,7 @@
 		.magnet:hover .hash {
 			display: block;
 		}
-		
+
 		.hash {
 			display: none;
 		}
@@ -168,11 +195,14 @@
 		.result_cont *:link {
 			color: palevioletred;
 		}
-		
+
 		#setdest, #srv {
 			min-width: 10px;
 			overflow: hidden;
-			max-height: 50px;
+			height: 30px;
+		}
+		#srv {
+			height: 22px;
 		}
 		#query {
 			width: calc(100% - 126px);
@@ -180,43 +210,49 @@
 		#result_container {
 			margin-top: 25px;
 		}
+		#sites_container > h1 {
+			font-size: x-large;
+		}
+		#sites_container {
+			gap: 3px;
+			justify-content: center;
+			margin: 12px 0;
+			max-width: 888px;
+		}
+		main {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		#sites_container > span {
+			cursor: pointer;
+			font-weight: bold;
+			font-size: larger;
+		}
+
 	</style>
 
-	<script> /* JS */
-		if (getCookie("srv")) {
-			var srv = getCookie("srv")
-		} else {
-			setCookie("srv", "http://localhost:8009") // https://torrent-api-py-nx0x.onrender.com
-		}
-		
-		var site = "piratebay"
-
+	<script>
 		function objectToQueryString(obj) {
 			let keyValuePairs = [];
-
 			for (let key in obj) {
 				if (obj[key] !== undefined && obj[key] !== "") {
 				keyValuePairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`);
 				}
 			}
-
 			return keyValuePairs.join('&');
 		}
 
-
 		function setCookie(name, value, daysToLive = null, path, domain) {
 			let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
-
 			if (daysToLive !== null) {
 				let expirationDate = new Date();
 				expirationDate.setTime(expirationDate.getTime() + (daysToLive * 24 * 60 * 60 * 1000));
 				cookie += `; expires=${expirationDate.toUTCString()}`;
 			}
-
 			if (path) {
 				cookie += `; path=${path}`;
 			}
-
 			if (domain) {
 				cookie += `; domain=${domain}`;
 			}
@@ -226,7 +262,6 @@
 
 		function getCookie(name) {
 			let cookies = document.cookie.split(';');
-
 			for (let cookie of cookies) {
 				let [cookieName, cookieValue] = cookie.split('=').map(c => c.trim());
 
@@ -234,24 +269,69 @@
 				return decodeURIComponent(cookieValue);
 				}
 			}
-
 			return null;
 		}
 
 		function deleteAllCookies(path, domain) {
 			let cookies = document.cookie.split(';');
-
 			for (let cookie of cookies) {
 				let cookieName = cookie.split('=')[0].trim();
 				deleteCookie(cookieName, path, domain);
 			}
 		}
 
-
 		function setsrv() {
 			setCookie("srv", document.getElementById("srv").value)
 			refresh_sites()
 		}
+
+		function sitelist_print(sites) {
+			sc = document.getElementById("sites_container")
+			sc.textContent = ""
+			setCookie("srvlist", JSON.stringify(sites))
+			sites.forEach(i => {
+				e = document.createElement("span")
+				e.textContent = ss_names[i]
+				e.id = i
+				e.onclick = function() {setCookie("site", i)}
+				sc.appendChild(e)
+			})
+		}
+
+		function refresh_sites() {
+			fetch(getCookie("srv") + "/api/v1/sites")
+			.then(response => response.json())
+			.then(data => {
+				sitelist_print(data["supported_sites"])
+			})
+		}
+
+		function filter(cat) {
+			let cats = []
+			let sites_have_cat = []
+			for (site in ss) {
+				cats = ss[site].categories
+				if (cats.includes(cat)) {
+					sites_have_cat = sites_have_cat.concat(site)
+				}
+			}
+			return sites_have_cat
+		}
+
+		function toggle_clicked(event) {
+			last_clicked = document.querySelector("#containers > form.clicked")
+			if (last_clicked && event.srcElement.tagName == 'FORM') {
+				last_clicked.classList.remove("clicked")
+			}
+			event.srcElement.classList.add("clicked")
+		}
+
+
+		if (!getCookie("srv")) {
+			setCookie("srv", "https://torrent-api-py-nx0x.onrender.com") // http://localhost:8009
+		}
+		
+		var last_clicked
 
 		ss_names = {
 			"1337x": "1337x",
@@ -432,35 +512,12 @@
 		}
 		cats = [...new Set(cats)]
 
-
-		function refresh_sites() {
-			fetch(getCookie("srv") + "/api/v1/sites")
-			.then(response => response.json())
-			.then(data => {
-				data["supported_sites"].forEach(i => {
-					e = document.createElement("span")
-					e.textContent = ss_names[i]
-					e.id = i
-					e.onclick = function() {setCookie("site", i)}
-					document.getElementById("sites_container").appendChild(e)
-				}); 
-			})
-		}
-		refresh_sites()
-
-		function filter(cat) {
-			let cats = []
-			let sites_have_cat = []
-			for (site in ss) {
-				cats = ss[site].categories
-				if (cats.includes(cat)) {
-					sites_have_cat = sites_have_cat.concat(site)
-				}
-			}
-			return sites_have_cat
-		}
-
 		window.onload = function() {
+			if (getCookie("srvlist")) {
+				sitelist_print(JSON.parse(getCookie("srvlist")))
+			}
+			refresh_sites()
+
 			const urlParams = new URLSearchParams(window.location.search);
 			document.getElementById("srv").value = getCookie("srv")
 			if (urlParams.has('search')) {
@@ -566,7 +623,6 @@
 					catElement.appendChild(optionElement);
 				});
 			});
-
 		}
 
 	</script>
@@ -575,51 +631,53 @@
 <body>
 	<header>
 		<h1>CorsairCove</h1>
-		<input id="srv" placeholder="Server Address...">
-		<button id="setdest" onclick="setsrv()">Set Destination Bay</button>
+		<input id="srv" placeholder="Listing Server Addr...">
+		<button id="setdest" onclick="setsrv()">Set</button>
 	</header>
 
-	<div id="sites_container" class="container">
-		<h1>Bays: </h1>
-	</div>
-	<div id="containers">
-		<form action="" method="get" id="search_container" class="container">
-			<h2>Search the Seven Seas:</h2>
-			<input name="search" type="hidden">
-			<div class="container">
-				<input name="q" id="query" placeholder="Search Query...">
-				<input name="limit" id="limit" type="number" placeholder="Limit">
-			</div>
-			<button type="submit">lookup</button>
-		</form>
+	<main>
+		<div id="sites_container" class="container">
+			<h1>Bays: </h1>
+		</div>
+		<div id="containers">
+			<form action="" method="get" id="search_container" class="container" onclick="toggle_clicked(event)">
+				<h2>Search the Seven Seas:</h2>
+				<input name="search" type="hidden">
+				<div class="container">
+					<input name="q" id="query" placeholder="Search Query...">
+					<input name="limit" id="limit" type="number" placeholder="Limit">
+				</div>
+				<button type="submit">lookup</button>
+			</form>
 
-		<form action="" method="get" id="trending_container" class="container">
-			<h2>Trending amongst other rippers:</h2>
-			<input name="trending" type="hidden">
-			<div class="container">
-				<input name="page" id="page" type="number" placeholder="Page No.">
-				<input name="limit" id="limit" type="number" placeholder="Limit">
-				<label>
-					<input name="all" id="all_trending" type="checkbox">
-					get all trending
-				</label>
-			</div>
-			<select class="cats" name="category"></select>	  
-			<button type="submit" href="?trending">lookup</button>
-		</form>
-
-		<form action="" method="get" id="recent_container" class="container">
-			<h2>Hot off the fire:</h2>
-			<input name="recent" type="hidden">
-			<div class="container">
-				<input name="limit" id="limit" type="number" placeholder="Limit">
+			<form action="" method="get" id="trending_container" class="container" onclick="toggle_clicked(event)">
+				<h2>Trending amongst others:</h2>
+				<input name="trending" type="hidden">
+				<div class="container">
+					<input name="page" id="page" type="number" placeholder="Page No.">
+					<input name="limit" id="limit" type="number" placeholder="Limit">
+					<label>
+						<input name="all" id="all_trending" type="checkbox">
+						all sites
+					</label>
+				</div>
 				<select class="cats" name="category"></select>	  
-			</div>
-			<button type="submit">lookup what's anew</button>
-		</form>
-	</div>
-	<main class="container main" id="result_container">
-		<h1 id="title"></h1><div id="list"></div>
+				<button type="submit" href="?trending">lookup</button>
+			</form>
+
+			<form action="" method="get" id="recent_container" class="container" onclick="toggle_clicked(event)">
+				<h2>Hot off the fire:</h2>
+				<input name="recent" type="hidden">
+				<div class="container">
+					<input name="limit" id="limit" type="number" placeholder="Limit">
+					<select class="cats" name="category"></select>	  
+				</div>
+				<button type="submit">lookup what's anew</button>
+			</form>
+		</div>
+		<div class="container main" id="result_container">
+			<h1 id="title"></h1><div id="list"></div>
+		</div>
 	</main>
 
 </body></html>
