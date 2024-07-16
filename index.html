@@ -3,42 +3,46 @@
 	<title>CorsairCove</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Tektur:wdth,wght@87.5,400..900&family=Workbench:SCAN@-20&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Tektur:wdth,wght@95,400..900&family=Workbench:SCAN@-20&display=swap" rel="stylesheet">
 	<style>
-		@import url('https://fonts.googleapis.com/css2?family=Tektur:wdth,wght@87.5,400..900&family=Workbench:SCAN@-20&display=swap');
-
+		@font-face {
+			font-family: fa;
+			src: url('fa-solid-900.ttf');
+		}
+		/* selection */
 		::-moz-selection {
 			color: white;
-			background: crimson;
+			background: palevioletred;
 		} 
 		::selection {
 			color: white;
-			background: crimson;
+			background: palevioletred;
 		}
+
+		/* background */
 		html {
 			background: #111;
 			color: white;
 			background-image: radial-gradient(#333, #222);
 			min-height: 100vh;
 			font-size: medium;
-			width: calc(100% - 7px);
-
-			font-family: "Tektur", sans-serif !important;
-			font-optical-sizing: auto;
-			font-style: normal;
-			font-variation-settings:
-				"wdth" 87.5;
+			width: 100%;
+			font-family: "Tektur", fa, sans-serif;
 		}
-		input, button {
+		/* interactable elements */
+		input, button, select, label {
 			background: transparent;
 			border: 1px solid silver;
 			outline: none;
 			padding: 3px 6px;
-		}
-		input, label {
-			border-radius: 3px !important;
 			color: white;
-			font-size: medium;
+			border-radius: 3px;
+			font-size: large;
+			font-family: "Tektur", fa, sans-serif;
+			background-color: #1116;
+		}
+		label {
+			border: none;
 		}
 		input[type="number"] {
 			width: 80px;
@@ -46,75 +50,49 @@
 		button {
 			border-radius: 8px;
 			cursor: pointer;
-			color: white;
-			font-size: medium;
 		}
-		form {
-			background-color: #1116;
-		}
+
+		/* header */
 		header {
 			display: flex;
 			gap: 5px;
 			padding: 2px 6px;
-			border-bottom: 1px solid silver;
 			flex-direction: row;
-			border-radius: 0 !important;
 		}
+
+		/* dropdown options */
+		select > option {
+			color: black;
+		}
+		/* links */
+		a:link {
+			color: palevioletred;
+			cursor: pointer;
+		}
+
+		/* header text */
 		header > h1 {
 			flex-grow: 1;
 			margin: 0;
 			text-shadow: 0px 0px 10px crimson, 0px 0px 5px palevioletred, 0px 0px 15px crimson, 2px 2px darkred, -2px -2px crimson;
 			margin-right: 20px;
-
 			font-family: "Workbench", sans-serif;
-			font-optical-sizing: auto;
-			font-style: normal;
-			font-variation-settings:
-				"BLED" 0,
-				"SCAN" -20;
+			font-variation-settings: "BLED" 0, "SCAN" -20;
 			font-size: 40px;
 		}
 
-		select {
-			background-color: transparent;
-			color: white;
-			outline: none;
+		/* the set server stuff */
+		header > button,
+		header > input {
+			min-width: 10px;
+			overflow: hidden;
+			height: 30px;
+		}
+		/* reduce 8px(padding) from it */
+		header > input {
+			height: 22px;
 		}
 
-		select > option {
-			color: black;
-		}
-
-		.container {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 3px 7px;
-			padding: 6px 10px;
-			border: 1px solid silver;
-			border-radius: 0;
-			cursor: default;
-			
-			align-items: center;
-			justify-content: space-between;
-			/*! gap: 3px; */
-			/*! justify-content: center; */
-		}
-		div.container {
-			flex-direction: row;
-			border: 0;
-		}
-		.container > *:not(h1, h2) {
-			border: 1px solid silver;
-			padding: 3px 8px;
-			border-radius: 8px;
-		}
-		.container > h1,
-		.container > h2 {
-			margin: 3px 0;
-		}
-		.container > label {
-			border: none !important;
-		}
 		.container > div {
 			display: flex;
 			flex-direction: row;
@@ -122,11 +100,8 @@
 			margin: 0;
 			padding: 0;
 		}
-		.container > button,
-		.container > a {
-			cursor: pointer;
-		}
 
+		/* "containers" container */
 		#containers {
 			display: flex;
 			flex-wrap: wrap;
@@ -135,32 +110,54 @@
 			gap: 8px;
 		}
 
-		form.container {
+		/* containers in #containers */
+		#containers > form {
 			width: 350px;
-			height: auto;
 			overflow: hidden;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 3px 7px;
+			padding: 6px 10px;
+			border: 1px solid silver;
+			justify-content: space-between;
+			cursor: pointer;
+			background-color: #1116;
+			transition-duration: .2s;
+		}
+		/* containers headers */
+		#containers > form > h2 {
+			margin: 3px 0;
+			width: calc(100% - 80px);
+			font-size: large;
+			pointer-events: none
 		}
 
-		form.container *:not(h2) {display: none;}
-
-		form.container.clicked {
-			height: auto;
-			overflow: hidden;
+		/* when containers in #containers clicked */
+		#containers > form.clicked {
+			height: calc-size(auto); /* animate height (it's coming in the future browsers, chromium canary already support this i think) */
+			cursor: default;
 		}
-		form.container.clicked *:not(h2) {
+
+		/* elements that hides when not clicked */
+		#containers > form *:not(h2, button[type="submit"]) {
+			display: none;
+		}
+
+		/* when elements that remain unhide when not clicked */
+		#containers > form.clicked :not(h2, button[type="submit"]) {
 			display: unset;
 		}
 
-		form > h2 {
-			pointer-events: none
-		}
-		
-		.column {
-			flex-direction: column;
+		/* list of results (duh) */
+		#results_list {
 			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: 12px;
 		}
 
-		.result_cont {
+		/* torrents in the results */
+		.torrent_container {
 			border-top: 1px solid silver;
 			display: flex;
 			flex-direction: row;
@@ -168,70 +165,66 @@
 			justify-content: space-between;
 			padding: 12px 5px;
 			gap: 1px;
-			width: calc(100% - 26px);
+			width: calc(100% - 10px);
 			text-decoration: none;
-			margin-top: 25px;
 		}
-		.result_cont > * {
-			width: fit-content;
-			line-break: anywhere;
-		}
-		.result_spacer {
+
+		/* a dummy element to divide up results
+		   ik it's a dumb way to move flex items to new line */
+		.results_spacer {
 			width: 100%;
 		}
+
+		/* show hash of magnet when magnet gets hovered */
 		.magnet:hover .hash {
 			display: block;
 		}
 
+		/* btw hash is hidden by default */
 		.hash {
 			display: none;
 		}
+
+		/* error (also duh) */
 		.error {
 			border: none !important;
 			padding: 0 !important;
 			color: palevioletred;
 		}
-			
-		.result_cont *:link {
-			color: palevioletred;
-		}
 
-		#setdest, #srv {
-			min-width: 10px;
-			overflow: hidden;
-			height: 30px;
-		}
-		#srv {
-			height: 22px;
-		}
-		#query {
-			width: calc(100% - 126px);
-		}
-		#result_container {
+		/* where the title and the list of results lives */
+		#results {
 			margin-top: 25px;
 			max-width: 888px;
+			min-width: 300px;
 		}
-		#sites_container > h1 {
-			font-size: x-large;
-		}
+
+		/* where the sites contains (3x duh) */
 		#sites_container {
 			gap: 3px;
 			justify-content: center;
 			margin: 12px 0;
 			max-width: 888px;
+
+			display: flex;
+			flex-wrap: wrap;
+			padding: 6px 10px;
+			border-radius: 0;
+			cursor: default;
+			align-items: center;
+		}
+		/* sites themselves */
+		#sites_container > span {
+			cursor: pointer;
+			font-size: larger;
+			border: 2px solid silver;
+			padding: 3px 8px;
+			border-radius: 8px;
 		}
 		main {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-		}
-		#sites_container > span {
-			cursor: pointer;
-			font-weight: bold;
-			font-size: larger;
-		}
-		#list {
-			flex-direction: column;
 		}
 	</style>
 
@@ -535,55 +528,55 @@
 				fetch(getCookie("srv") + "/api/v1/search?"+objectToQueryString(arg))
 				.then(response => response.json())
 				.then(data => {
-					console.log(data)
+					// console.log(data)
 					if (data.hasOwnProperty('error')) {
 						error = document.createElement("span")
 						error.textContent = data["error"]
 						error.classList = ["error"]
-						document.getElementById("result_container").appendChild(error)
+						document.getElementById("torrent_containerainer").appendChild(error)
 
 					}
 					data["time"]
 					data["total"]
 					data["data"].forEach(i => {
 						category = document.createElement("span")
-						category.textContent = i["category"]
+						category.innerHTML = "&#xf03a; "+i["category"]
 						category.classList = ["cat"]
 
 						date = document.createElement("span")
-						date.textContent = i["date"]
+						date.innerHTML = "&#xf017; "+i["date"]
 						date.classList = ["date"]
 
 						sele = document.createElement("span")
-						sele.textContent = "SE:"+i["seeders"]+" LE:"+i["leechers"]
+						sele.innerHTML = "&#xf4d8; "+i["seeders"]+" &#xe599; "+i["leechers"]
 						sele.classList = ["leechers"]
 
 						magnet = document.createElement("a")
-						magnet.innerHTML = "MAGNET <span class='hash'>Hash:" + i["hash"]+"</span>"
+						magnet.innerHTML = "&#xf076; MAGNET <span class='hash'>Hash:" + i["hash"]+"</span>"
 						magnet.href = i["magnet"]
 						magnet.classList = ["magnet"]
 
 						tname = document.createElement("a")
-						tname.textContent = i["name"]
+						tname.innerHTML = i["name"]
 						tname.classList = ["name"]
 						tname.href = i["url"]
 
 						size = document.createElement("span")
-						size.textContent = i["size"]
+						size.innerHTML = "&#xf0c7; "+i["size"]
 						size.classList = ["size"]
 
 						uploader = document.createElement("span")
-						uploader.textContent = "by:  "+i["uploader"]
+						uploader.innerHTML = "&#xf007; By: "+i["uploader"]
 						uploader.classList = ["uploader"]
 
 
 						spacer1 = document.createElement("span")
-						spacer1.classList = ["result_spacer"]
+						spacer1.classList = ["results_spacer"]
 						spacer2 = document.createElement("span")
-						spacer2.classList = ["result_spacer"]
+						spacer2.classList = ["results_spacer"]
 
 						cont = document.createElement("div")
-						cont.classList = ["result_cont"]
+						cont.classList = ["torrent_container"]
 
 						cont.appendChild(tname)
 						cont.appendChild(spacer1)
@@ -596,7 +589,7 @@
 
 						cont.appendChild(magnet)
 						cont.appendChild(sele)
-						document.getElementById("list").appendChild(cont)
+						document.getElementById("results_list").appendChild(cont)
 
 					}); 
 					
@@ -646,16 +639,17 @@
 			<form action="" method="get" id="search_container" class="container" onclick="toggle_clicked(event)">
 				<h2>Search the Seven Seas:</h2>
 				<input name="search" type="hidden">
+				<button type="submit">lookup</button>
 				<div class="container">
 					<input name="q" id="query" placeholder="Search Query...">
 					<input name="limit" id="limit" type="number" placeholder="Limit">
 				</div>
-				<button type="submit">lookup</button>
 			</form>
 
 			<form action="" method="get" id="trending_container" class="container" onclick="toggle_clicked(event)">
 				<h2>Trending amongst others:</h2>
 				<input name="trending" type="hidden">
+				<button type="submit" href="?trending">lookup</button>
 				<div class="container">
 					<input name="page" id="page" type="number" placeholder="Page No.">
 					<input name="limit" id="limit" type="number" placeholder="Limit">
@@ -665,21 +659,20 @@
 					</label>
 				</div>
 				<select class="cats" name="category"></select>	  
-				<button type="submit" href="?trending">lookup</button>
 			</form>
 
 			<form action="" method="get" id="recent_container" class="container" onclick="toggle_clicked(event)">
 				<h2>Hot off the fire:</h2>
 				<input name="recent" type="hidden">
+				<button type="submit">lookup</button>
 				<div class="container">
 					<input name="limit" id="limit" type="number" placeholder="Limit">
 					<select class="cats" name="category"></select>	  
 				</div>
-				<button type="submit">lookup what's anew</button>
 			</form>
 		</div>
-		<div class="container main" id="result_container">
-			<h1 id="title"></h1><div id="list"></div>
+		<div id="results">
+			<h1 id="title"></h1><div id="results_list"></div>
 		</div>
 	</main>
 
